@@ -51,6 +51,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 # matplotlib的顶层模块，用于设置后端（backend）
 import matplotlib
+# font_manager：字体管理模块，用于动态加载自定义字体文件
+import matplotlib.font_manager as fm
 
 # 设置matplotlib使用非交互式后端（Agg）
 # 什么是后端？
@@ -62,23 +64,41 @@ import matplotlib
 matplotlib.use('Agg')
 
 # 设置matplotlib中文字体，防止中文显示为方框（豆腐块）
-# 问题原因：不同操作系统默认安装的中文字体不同
-#   Windows: SimHei, Microsoft YaHei
-#   Mac: Arial Unicode MS, PingFang SC
-#   Linux/Streamlit Cloud: Noto Sans CJK SC, WenQuanYi Micro Hei, DejaVu Sans
+# 问题原因：Streamlit Cloud服务器是Linux系统，默认没有中文字体
+# 解决方案：使用内嵌字体文件（打包在项目中），动态加载
 
-# 方法：按优先级列出多个字体，matplotlib会自动选择第一个可用的字体
-# 添加Linux常用字体到列表开头
-plt.rcParams['font.sans-serif'] = [
-    'Noto Sans CJK SC',      # Google开源中文字体，Streamlit Cloud可能有
-    'Noto Sans CJK',          # Noto Sans CJK通用
-    'WenQuanYi Micro Hei',    # 文泉驿微米黑，Linux常见
-    'DejaVu Sans',            # 支持Unicode的通用字体（备选）
-    'SimHei',                 # 黑体（Windows）
-    'Microsoft YaHei',        # 微软雅黑（Windows）
-    'Arial Unicode MS',       # Mac系统
-    'PingFang SC'             # Mac系统
-]
+# 获取字体文件路径
+# __file__是当前文件（app.py）的路径
+# os.path.dirname获取目录路径
+# os.path.join拼接路径
+font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'simhei.ttf')
+
+# 检查字体文件是否存在
+if os.path.exists(font_path):
+    # 动态加载字体文件到matplotlib
+    # addfont()会把字体添加到matplotlib的字体管理器中
+    fm.fontManager.addfont(font_path)
+    # 获取字体属性
+    font_prop = fm.FontProperties(fname=font_path)
+    # 设置字体名称（使用字体的family name）
+    plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
+    # 设置默认字体
+    plt.rcParams['font.family'] = font_prop.get_name()
+    print(f"✅ 成功加载内嵌字体: {font_prop.get_name()}")
+else:
+    # 如果字体文件不存在，使用系统字体作为备选
+    plt.rcParams['font.sans-serif'] = [
+        'Noto Sans CJK SC',      # Google开源中文字体
+        'Noto Sans CJK',          # Noto Sans CJK通用
+        'WenQuanYi Micro Hei',    # 文泉驿微米黑
+        'DejaVu Sans',            # 支持Unicode的通用字体
+        'SimHei',                 # 黑体（Windows）
+        'Microsoft YaHei',        # 微软雅黑（Windows）
+        'Arial Unicode MS',       # Mac系统
+        'PingFang SC'             # Mac系统
+    ]
+    print(f"⚠️ 字体文件不存在({font_path})，使用系统字体")
+
 # axes.unicode_minus：解决负号"-"显示为方块的问题
 #   False表示使用Unicode负号，可以正常显示
 plt.rcParams['axes.unicode_minus'] = False
