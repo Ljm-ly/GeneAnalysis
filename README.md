@@ -12,6 +12,7 @@
 ## 🚀 快速开始
 你可以直接使用已经部署到Streamlit的应用，也可以选择自己部署
 
+###直接运行
 如果想直接用软件，请在浏览器中访问 https://geneanalysis-app.streamlit.app/
 
 ### 本地运行
