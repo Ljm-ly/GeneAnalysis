@@ -1,0 +1,50 @@
+# =========================================
+#  .gitignore - Git忽略文件
+# =========================================
+# 以下文件不会被提交到GitHub
+# 避免上传敏感信息、临时文件、虚拟环境等
+
+# ====== Python ======
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ====== 虚拟环境 ======
+env/
+venv/
+ENV/
+.env/
+.venv/
+
+# ====== IDE / 编辑器 ======
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ====== Streamlit ======
+.streamlit/secrets.toml
+
+# ====== 临时文件 ======
+*.tmp
+*.log
+*.bak
+debug.log
+
+# ====== 结果文件（可选，根据需要上传） ======
+results/
+*.png
+*.jpg
+*.pdf
+
+# ====== 系统文件 ======
+Thumbs.db
+desktop.ini

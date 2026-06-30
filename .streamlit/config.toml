@@ -1,0 +1,25 @@
+# =========================================
+#  Streamlit 应用配置文件
+# =========================================
+# 该文件用于Streamlit Community Cloud部署
+# 会被Streamlit自动读取
+
+[server]
+# 服务器端口
+port = 8501
+# 允许跨域请求（部署时需要）
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+# 禁用使用统计收集
+gatherUsageStats = false
+
+[theme]
+# 主题设置
+base = "light"
+primaryColor = "#FF4B4B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"

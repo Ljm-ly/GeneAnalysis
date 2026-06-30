@@ -1,0 +1,77 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>d37d2289-a5b8-4506-9052-12212be400ec</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>main.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>GeneAnalysis</Name>
+    <RootNamespace>GeneAnalysis</RootNamespace>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <TestFramework>Pytest</TestFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="data_processing\" />
+    <Folder Include="expression_analysis\" />
+    <Folder Include="machine_learning\" />
+    <Folder Include="tests\" />
+    <Folder Include="utils\" />
+    <Folder Include="visualization\" />
+    <Folder Include="sequence_analysis\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="module_planning.md" />
+    <Content Include="requirements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="config.py" />
+    <Compile Include="data_processing\data_cleaner.py" />
+    <Compile Include="data_processing\fasta_reader.py" />
+    <Compile Include="data_processing\__init__.py" />
+    <Compile Include="expression_analysis\differential.py" />
+    <Compile Include="expression_analysis\__init__.py" />
+    <Compile Include="machine_learning\classifier.py" />
+    <Compile Include="machine_learning\__init__.py" />
+    <Compile Include="main.py" />
+    <Compile Include="sequence_analysis\basic_stats.py" />
+    <Compile Include="sequence_analysis\__init__.py" />
+    <Compile Include="tests\test_data.py" />
+    <Compile Include="tests\__init__.py" />
+    <Compile Include="utils\helpers.py" />
+    <Compile Include="utils\__init__.py" />
+    <Compile Include="visualization\plots.py" />
+    <Compile Include="visualization\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.14</Version>
+      <Description>env (Python 3.14 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
