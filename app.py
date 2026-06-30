@@ -62,11 +62,23 @@ import matplotlib
 matplotlib.use('Agg')
 
 # 设置matplotlib中文字体，防止中文显示为方框（豆腐块）
-# font.sans-serif：无衬线字体列表，按优先级依次尝试
-#   SimHei - 黑体（Windows常用）
-#   Microsoft YaHei - 微软雅黑（Windows常用）
-#   Arial Unicode MS - Mac系统常用
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']
+# 问题原因：不同操作系统默认安装的中文字体不同
+#   Windows: SimHei, Microsoft YaHei
+#   Mac: Arial Unicode MS, PingFang SC
+#   Linux/Streamlit Cloud: Noto Sans CJK SC, WenQuanYi Micro Hei, DejaVu Sans
+
+# 方法：按优先级列出多个字体，matplotlib会自动选择第一个可用的字体
+# 添加Linux常用字体到列表开头
+plt.rcParams['font.sans-serif'] = [
+    'Noto Sans CJK SC',      # Google开源中文字体，Streamlit Cloud可能有
+    'Noto Sans CJK',          # Noto Sans CJK通用
+    'WenQuanYi Micro Hei',    # 文泉驿微米黑，Linux常见
+    'DejaVu Sans',            # 支持Unicode的通用字体（备选）
+    'SimHei',                 # 黑体（Windows）
+    'Microsoft YaHei',        # 微软雅黑（Windows）
+    'Arial Unicode MS',       # Mac系统
+    'PingFang SC'             # Mac系统
+]
 # axes.unicode_minus：解决负号"-"显示为方块的问题
 #   False表示使用Unicode负号，可以正常显示
 plt.rcParams['axes.unicode_minus'] = False
