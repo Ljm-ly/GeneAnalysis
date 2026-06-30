@@ -63,45 +63,61 @@ import matplotlib.font_manager as fm
 #   如果用默认后端，在服务器上可能会报错
 matplotlib.use('Agg')
 
-# 设置matplotlib中文字体，防止中文显示为方框（豆腐块）
+# ==================================================
+# 字体配置：解决中文乱码问题
+# ==================================================
 # 问题原因：Streamlit Cloud服务器是Linux系统，默认没有中文字体
-# 解决方案：使用内嵌字体文件（打包在项目中），动态加载
+# 解决方案：使用内嵌字体文件 + 多字体fallback机制
 
-# 获取字体文件路径
-# __file__是当前文件（app.py）的路径
-# os.path.dirname获取目录路径
-# os.path.join拼接路径
+# 字体文件路径（项目中的fonts目录）
 font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'simhei.ttf')
 
-# 检查字体文件是否存在
-if os.path.exists(font_path):
-    # 动态加载字体文件到matplotlib
-    # addfont()会把字体添加到matplotlib的字体管理器中
-    fm.fontManager.addfont(font_path)
-    # 获取字体属性
-    font_prop = fm.FontProperties(fname=font_path)
-    # 设置字体名称（使用字体的family name）
-    plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
-    # 设置默认字体
-    plt.rcParams['font.family'] = font_prop.get_name()
-    print(f"✅ 成功加载内嵌字体: {font_prop.get_name()}")
-else:
-    # 如果字体文件不存在，使用系统字体作为备选
-    plt.rcParams['font.sans-serif'] = [
-        'Noto Sans CJK SC',      # Google开源中文字体
-        'Noto Sans CJK',          # Noto Sans CJK通用
-        'WenQuanYi Micro Hei',    # 文泉驿微米黑
-        'DejaVu Sans',            # 支持Unicode的通用字体
-        'SimHei',                 # 黑体（Windows）
-        'Microsoft YaHei',        # 微软雅黑（Windows）
-        'Arial Unicode MS',       # Mac系统
-        'PingFang SC'             # Mac系统
-    ]
-    print(f"⚠️ 字体文件不存在({font_path})，使用系统字体")
+# 最终使用的字体列表（按优先级排序）
+font_list = []
 
-# axes.unicode_minus：解决负号"-"显示为方块的问题
-#   False表示使用Unicode负号，可以正常显示
+if os.path.exists(font_path):
+    try:
+        # 1. 先尝试加载内嵌字体
+        fm.fontManager.addfont(font_path)
+        font_prop = fm.FontProperties(fname=font_path)
+        font_name = font_prop.get_name()
+        font_list.append(font_name)
+        print(f"[字体配置] ✅ 成功加载内嵌字体: {font_name}")
+        print(f"[字体配置] 📂 字体文件路径: {font_path}")
+        print(f"[字体配置] 📐 文件大小: {os.path.getsize(font_path)} bytes")
+    except Exception as e:
+        print(f"[字体配置] ⚠️  加载内嵌字体失败: {e}")
+
+# 2. 添加系统备选字体
+font_list.extend([
+    'Noto Sans CJK SC',      # Google Noto Sans CJK
+    'Noto Sans CJK JP',
+    'Noto Sans CJK',
+    'WenQuanYi Micro Hei',   # 文泉驿微米黑
+    'WenQuanYi Zen Hei',     # 文泉驿正黑
+    'SimHei',                 # 黑体（Windows）
+    'Microsoft YaHei',        # 微软雅黑（Windows）
+    'PingFang SC',            # Mac系统
+    'Arial Unicode MS',       # Mac系统
+    'DejaVu Sans',            # 通用Unicode字体
+])
+
+# 3. 设置matplotlib字体
+plt.rcParams['font.sans-serif'] = font_list
+plt.rcParams['font.family'] = 'sans-serif'
+
+# 4. 解决负号显示为方块的问题
 plt.rcParams['axes.unicode_minus'] = False
+
+# 5. 打印当前可用字体列表（调试用）
+print(f"[字体配置] 📋 字体优先级列表: {font_list[:5]}...")
+available_fonts = [f.name for f in fm.fontManager.ttflist if any(
+    kw in f.name.lower() for kw in ['hei', 'song', 'cjk', 'chinese', 'yahei', 'noto']
+)]
+if available_fonts:
+    print(f"[字体配置] ✅ 系统中检测到的中文字体: {available_fonts[:10]}")
+else:
+    print(f"[字体配置] ⚠️  系统中未检测到明显的中文字体")
 
 # ==================== 项目自定义模块导入 ====================
 # 将当前文件所在目录添加到Python搜索路径的最前面

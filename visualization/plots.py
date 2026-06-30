@@ -22,10 +22,42 @@ import numpy as np                 # NumPy数值计算库
 from typing import List, Dict, Optional, Tuple  # 类型提示
 import logging                     # 日志模块
 import os                          # 操作系统模块，用于路径操作
+import matplotlib.font_manager as fm  # 字体管理模块，用于动态加载自定义字体
 
-# 设置matplotlib支持中文字体
-# 如果不设置，中文会显示为方框
-plt.rcParams['font.sans-serif'] = ['SimHei']
+# ==================================================
+# 全局字体配置：支持内嵌字体
+# ==================================================
+# 先尝试加载项目中的内嵌字体文件（用于Streamlit Cloud等无中文字体的环境）
+# 获取字体文件路径（相对于当前模块文件）
+_module_dir = os.path.dirname(os.path.abspath(__file__))
+_project_dir = os.path.dirname(_module_dir)  # 项目根目录
+_font_path = os.path.join(_project_dir, 'fonts', 'simhei.ttf')
+
+# 默认字体列表（按优先级排序）
+_default_font_list = [
+    'SimHei',
+    'Microsoft YaHei',
+    'Noto Sans CJK SC',
+    'WenQuanYi Micro Hei',
+    'DejaVu Sans',
+    'Arial Unicode MS'
+]
+
+if os.path.exists(_font_path):
+    # 如果内嵌字体文件存在，动态加载
+    try:
+        fm.fontManager.addfont(_font_path)
+        _font_prop = fm.FontProperties(fname=_font_path)
+        _font_name = _font_prop.get_name()
+        # 把内嵌字体放在最前面，优先级最高
+        _default_font_list.insert(0, _font_name)
+        plt.rcParams['font.family'] = _font_name
+        logging.info(f"成功加载内嵌字体: {_font_name}")
+    except Exception as e:
+        logging.warning(f"加载内嵌字体失败: {e}")
+
+# 设置matplotlib中文字体
+plt.rcParams['font.sans-serif'] = _default_font_list
 # 解决负号显示为方块的问题
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -53,10 +85,13 @@ class PlotGenerator:
         # 设置seaborn的绘图样式
         sns.set_style(style)
         
-        # 设置字体支持中文（包含备选字体）
-        # 如果SimHei不可用，会尝试Microsoft YaHei等
-        plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
+        # 重要：在sns.set_style之后，重新设置字体
+        # 因为sns.set_style可能会覆盖字体设置
+        plt.rcParams['font.sans-serif'] = _default_font_list
         plt.rcParams['axes.unicode_minus'] = False
+        
+        # 同时设置seaborn的字体
+        sns.set_context("notebook", font_scale=1.0)
         
         # 设置全局字体大小
         plt.rcParams['font.size'] = 12
