@@ -2,18 +2,25 @@
 
 一个功能完整的基因表达数据分析Web应用，集成了序列分析、差异表达分析、可视化和机器学习预测四大核心功能。
 
+> 📦 **GitHub 仓库**：[https://github.com/Ljm-ly/GeneAnalysis](https://github.com/Ljm-ly/GeneAnalysis)
+> 
+> 🌐 **在线使用**：[https://geneanalysis-app.streamlit.app/](https://geneanalysis-app.streamlit.app/)
+> 
+> 📖 **使用说明书**：[基因表达调控分析与预测平台（V1.0）软件使用说明书.docx](基因表达调控分析与预测平台（V1.0）软件使用说明书.docx)
+
 ## ✨ 功能特性
 
 - 🔬 **序列分析**：GC含量计算、核苷酸频率统计、序列长度分布
 - 📊 **差异表达分析**：t检验统计、BH-FDR多重校正、上调/下调基因识别
 - 📈 **可视化图表**：火山图、表达热图、PCA主成分分析、GC含量分布图
 - 🤖 **机器学习**：随机森林分类、特征重要性分析、模型性能评估
+- 📚 **完整文档**：提供详细的软件使用说明书（Word格式），涵盖系统架构、操作指南、测试说明与常见问题解答
 
 ## 🚀 快速开始
 你可以直接使用已经部署到Streamlit的应用，也可以选择自己部署
 
-### 直接使用
-如果想直接用软件，请在浏览器中访问 https://geneanalysis-app.streamlit.app/
+### 直接使用（推荐）
+如果想直接用软件，请在浏览器中访问 **[https://geneanalysis-app.streamlit.app/](https://geneanalysis-app.streamlit.app/)**，无需安装任何软件，开箱即用。
 
 ### 本地运行
 
