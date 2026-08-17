@@ -211,8 +211,7 @@ if __name__ == "__main__":
          "13th Gen Intel(R) Core(TM) i7-13700H CPU；Intel(R) UHD Graphics；"
          "内存：16GB；硬盘空间50GB以上"),
         ("运行的硬件环境",
-         "Intel(R) Core(TM) i5-10400及以上；Intel(R) UHD Graphics；"
-         "内存：8GB；硬盘空间50GB以上"),
+         "双核 x86_64 CPU 及以上；集成显卡；内存：4GB；硬盘空间5GB以上"),
         ("开发该软件的操作系统", "Windows 10"),
         ("软件开发环境/开发工具", "Python + Streamlit"),
         ("该软件的运行平台 / 操作系统",
