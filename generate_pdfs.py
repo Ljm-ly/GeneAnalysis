@@ -213,14 +213,14 @@ if __name__ == "__main__":
         ("运行的硬件环境",
          "Intel(R) Core(TM) i5-10400及以上；Intel(R) UHD Graphics；"
          "内存：8GB；硬盘空间50GB以上"),
-        ("开发该软件的操作系统", "Windows 11"),
+        ("开发该软件的操作系统", "Windows 10"),
         ("软件开发环境/开发工具", "Python + Streamlit"),
         ("该软件的运行平台 / 操作系统",
-         "Windows 11及更高版本Windows / macOS / Linux（跨平台，基于Python）"),
+         "Windows 10及更高版本Windows / macOS / Linux（跨平台，基于Python）"),
         ("软件运行支撑环境 / 支撑软件",
-         "Python 3.8及以上；Streamlit>=1.28.0；依赖库包括numpy、pandas、"
-         "matplotlib、seaborn、biopython、scikit-learn、scipy、openpyxl"
-         "（详见requirements.txt）"),
+         "Python 3.10及以上；Streamlit>=1.28.0；依赖库包括numpy>=1.24.0、"
+         "pandas>=2.0.0、matplotlib>=3.7.0、seaborn>=0.12.0、biopython>=1.81、"
+         "scikit-learn>=1.3.0、openpyxl>=3.1.0（详见requirements.txt）"),
         ("编程语言", "Python"),
         ("源程序量", f"{total_lines} 行"),
         ("技术特点",
