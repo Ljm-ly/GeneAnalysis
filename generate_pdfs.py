@@ -255,26 +255,29 @@ if __name__ == "__main__":
     pages = generate_source_code_pdf(src_pdf, source_files)
     print(f"已生成《源代码》PDF: {src_pdf} ({pages} 页)")
 
-    # ---- 信息手册 PDF：字段内容 ----
+    # ---- 信息手册 PDF：字段内容（依据本项目实际技术栈与功能编写）----
     info_fields = [
         ("软件全称", "基因表达调控分析与预测平台"),
         ("软件简称", "基因分析平台"),
         ("版本号", "V1.0"),
         ("开发目的",
          "本系统的开发旨在解决生物信息学研究中基因表达数据分析流程分散、"
-         "门槛高、可视化不足等问题，通过集成序列分析、差异表达分析、"
-         "可视化图表与机器学习预测四大核心功能，提供从原始数据读取到"
-         "结果输出的一站式分析平台，助力科研人员高效完成基因表达调控"
-         "分析与预测，提升生物信息学研究效率与结果可复现性。"),
+         "门槛高、可视化不足等问题，通过集成DNA序列分析、差异表达分析、"
+         "可视化图表与机器学习预测四大核心功能，提供从原始FASTA序列和"
+         "CSV表达矩阵读取、参数配置、统计检验、图表生成到结果导出的"
+         "一站式Web分析平台，助力科研人员高效完成基因表达调控分析与"
+         "预测，提升生物信息学研究效率与实验结果可复现性。"),
         ("面向领域/行业", "生物信息学/生命科学"),
         ("软件的主要功能",
-         "本系统提供基因序列分析（GC含量计算、核苷酸频率统计、序列长度分布）、"
-         "差异表达分析（t检验统计、BH-FDR多重校正、上调/下调基因识别）、"
-         "可视化图表（火山图、表达热图、PCA主成分分析、GC含量分布图）、"
-         "机器学习预测（随机森林分类、特征重要性分析、模型性能评估）"
-         "等核心功能，支持FASTA序列文件与CSV表达矩阵上传、参数配置、"
-         "完整分析流程一键执行及结果（CSV表格、高清PNG图表）导出，"
-         "满足基因表达调控分析与预测的科研需求。"),
+         "本系统基于Streamlit构建5页面Web应用（首页、数据配置、运行分析、"
+         "结果展示、下载结果），提供四大核心功能：①序列分析——基于"
+         "Biopython SeqIO解析FASTA，计算GC含量、核苷酸频率（A/T/G/C）、"
+         "序列长度分布；②差异表达分析——读取CSV表达矩阵，按对照组/"
+         "处理组执行SciPy t检验，采用BH-FDR多重检验校正，结合log2倍数"
+         "变化识别上调/下调基因；③可视化——matplotlib+seaborn生成火山图、"
+         "表达热图、PCA主成分分析图、GC含量分布图；④机器学习预测——"
+         "scikit-learn随机森林分类，输出特征重要性、准确率/精确率/召回率/"
+         "F1/AUC等性能指标，并支持CSV表格与高清PNG图表（300 DPI）导出。"),
         ("软件分类", "应用软件"),
         ("开发的硬件环境",
          "13th Gen Intel(R) Core(TM) i7-13700H CPU；Intel(R) UHD Graphics；"
@@ -283,20 +286,24 @@ if __name__ == "__main__":
          "Intel(R) Core(TM) i5-10400及以上；Intel(R) UHD Graphics；"
          "内存：8GB；硬盘空间50GB以上"),
         ("开发该软件的操作系统", "Windows 11"),
-        ("软件开发环境/开发工具", "Python"),
+        ("软件开发环境/开发工具", "Python + Streamlit"),
         ("该软件的运行平台 / 操作系统",
-         "Windows 11及更高版本Windows / macOS / Linux（跨平台）"),
+         "Windows 11及更高版本Windows / macOS / Linux（跨平台，基于Python）"),
         ("软件运行支撑环境 / 支撑软件",
-         "Python 3.8及以上；Streamlit Web框架；依赖见requirements.txt"),
+         "Python 3.8及以上；Streamlit>=1.28.0；依赖库包括numpy、pandas、"
+         "matplotlib、seaborn、biopython、scikit-learn、scipy、openpyxl"
+         "（详见requirements.txt）"),
         ("编程语言", "Python"),
         ("源程序量", f"{total_lines} 行"),
         ("技术特点",
-         "系统采用Python+Streamlit轻量化Web技术架构，集成pandas、numpy"
-         "进行数据处理，matplotlib/seaborn实现可视化，biopython处理FASTA"
-         "序列，scikit-learn实现机器学习预测。通过模块化设计，解耦序列分析、"
-         "差异表达分析、可视化与机器学习四大功能模块；采用dataclass集中"
-         "管理分析参数，保障实验可复现；内置中文字体与多字体fallback机制，"
-         "支持Streamlit Community Cloud云端一键部署与本地运行。"),
+         "系统采用Python+Streamlit轻量化Web技术架构，模块化设计六大功能"
+         "包（data_processing、sequence_analysis、expression_analysis、"
+         "machine_learning、visualization、utils）；使用dataclass集中管理"
+         "分析参数（P值阈值、log2FC、随机森林超参数等）保障实验可复现；"
+         "通过Streamlit Session State实现页面间数据共享与状态保持；"
+         "matplotlib配置Agg非交互式后端与内嵌simhei.ttf中文字体+多字体"
+         "fallback机制，解决Linux云端中文乱码问题；支持本地运行"
+         "（streamlit run app.py）与Streamlit Community Cloud一键部署。"),
         ("软件参考地址", "https://geneanalysis-app.streamlit.app/"),
         ("软件下载地址（安卓/iOS）", ""),
     ]
