@@ -3,10 +3,12 @@
 为基因分析项目生成《源代码》和《信息手册》两个 PDF。
 使用 fpdf2 库，支持 SMP emoji 字符的自动字体 fallback。
 
-格式参照飞书中的参考文件：
-  - 源代码.pdf：每页页眉为"软件名称（版本号）"，页脚页码，
-    各源文件以"N.filename"编号头列出，等宽字体呈现代码。
-  - 软件信息指南.pdf：单页结构化字段表单（【字段】：值）。
+格式严格对齐飞书参考文件：
+  - 源代码.pdf：US Letter (612×792pt)、代码字体 10pt、左边距 90pt (~31.8mm)、
+    Consolas 等宽字体、页眉左对齐软件名(版本号)+右上角页码、内容从 y=74 开始、
+    文件以"N.filename"编号头
+  - 信息手册.pdf：A4、字体 12pt、左边距 90pt (~31.8mm)、行距 23.4pt、
+    无页眉页脚、内容从 y=78 开始、SimHei 字体、【字段】：值 结构化表单
 """
 import os
 from fpdf import FPDF
@@ -23,61 +25,149 @@ SOFTWARE_NAME = "基因表达调控分析与预测平台"
 VERSION = "V1.0"
 HEADER_TEXT = f"{SOFTWARE_NAME}（{VERSION}）"
 
-PAGE_W, PAGE_H = 210, 297  # A4 mm
-MARGIN_X = 10    # mm，缩小左右页边距以容纳长行
-MARGIN_TOP = 18
-MARGIN_BOTTOM = 15
-
-CODE_FONT_SIZE = 6.5  # pt → mm 需转换; fpdf2 用 mm
-CODE_FONT_SIZE_MM = CODE_FONT_SIZE * 0.352778  # pt → mm
-CODE_LEADING_MM = CODE_FONT_SIZE_MM * 1.3  # 行高
+# 参考文件格式标准
+MARGIN_LEFT_PT = 90.0   # 参考文件左边距 90pt
+MARGIN_RIGHT_PT = 90.0  # 右边距对称 90pt
+SRC_MARGIN_TOP_PT = 74.0   # 源代码：内容从 y=74.2 开始（参考文件）
+INFO_MARGIN_TOP_PT = 78.0  # 信息手册：内容从 y=77.8 开始（参考文件无页眉）
+MARGIN_BOTTOM_PT = 50.0    # 底部页脚预留
 
 
+# =========================================================
+# 1. 源代码 PDF（US Letter, Consolas/DejaVuMono 10pt）
+# =========================================================
 class SourceCodePDF(FPDF):
-    """源代码 PDF，带页眉页脚。"""
+    """源代码 PDF，US Letter 格式，页眉左对齐+右上角页码。"""
 
     def __init__(self):
-        super().__init__(orientation='P', unit='mm', format='A4')
-        self.set_margins(MARGIN_X, MARGIN_TOP, MARGIN_X)
-        self.set_auto_page_break(True, margin=MARGIN_BOTTOM)
+        # US Letter: 612 x 792 pt = 215.9 x 279.4 mm
+        super().__init__(orientation='P', unit='pt', format='Letter')
+        self.set_margins(MARGIN_LEFT_PT, SRC_MARGIN_TOP_PT, MARGIN_RIGHT_PT)
+        self.set_auto_page_break(True, margin=MARGIN_BOTTOM_PT)
+        self.c_margin = 0  # cell 左右内边距设为 0，使文本精确从左边距开始
         # 注册字体
-        self.add_font("DejaVuMono", "", DEJAVU_MONO_PATH)
+        self.add_font("Consolas", "", DEJAVU_MONO_PATH)
+        self.add_font("Consolas", "B", DEJAVU_MONO_PATH)
         self.add_font("SimHei", "", SIMHEI_PATH)
         self.add_font("NotoEmoji", "", NOTOEMOJI_PATH)
-        # 设置 fallback 字体链：DejaVuMono → SimHei → NotoEmoji
+        # fallback 字体链：Consolas → SimHei → NotoEmoji
         self.set_fallback_fonts(["SimHei", "NotoEmoji"])
 
     def header(self):
-        self.set_font("SimHei", size=11)
-        self.set_y(8)
-        self.cell(0, 8, text=HEADER_TEXT, align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        # 页眉：左对齐软件名（中文用 SimHei，V1.0 用 Consolas），右上角页码
+        y = 37.5
+        text = HEADER_TEXT
+        cur_x = MARGIN_LEFT_PT
+        i = 0
+        n = len(text)
+        while i < n:
+            is_cjk = is_cjk_char(text[i])
+            j = i
+            while j < n and is_cjk_char(text[j]) == is_cjk:
+                j += 1
+            run = text[i:j]
+            font_name = "SimHei" if is_cjk else "Consolas"
+            self.set_xy(cur_x, y)
+            self.set_font(font_name, size=10)
+            self.cell(0, 10, text=run, new_x=XPos.RIGHT, new_y=YPos.TOP)
+            cur_x += self.get_string_width(run)
+            i = j
+        # 页码：右上角
+        page_str = f"{self.page_no()} "
+        self.set_font("Consolas", size=10)
+        page_w = self.get_string_width(page_str)
+        self.set_xy(self.w - MARGIN_RIGHT_PT - page_w, y)
+        self.cell(0, 10, text=page_str, new_x=XPos.LEFT, new_y=YPos.TOP)
 
     def footer(self):
-        self.set_font("SimHei", size=10)
-        self.set_y(-12)
-        self.cell(0, 8, text=str(self.page_no()), align='C')
+        # 参考文件页脚为空
+        pass
+
+
+def is_cjk_char(ch):
+    """判断字符是否为 CJK 或需要 SimHei 字体渲染。"""
+    code = ord(ch)
+    # ASCII 用 Consolas
+    if code < 128:
+        return False
+    # CJK 统一表意文字、CJK 标点、希腊字母等用 SimHei
+    return True
+
+
+def draw_code_line(pdf, x, y, text, font_size, leading):
+    """
+    手动逐段渲染一行代码：ASCII 用 Consolas，CJK/emoji 用 SimHei/NotoEmoji。
+    绕过 fpdf2 的 fallback 机制 bug，确保每个字符都正确渲染。
+    如果行总宽度超过可用宽度，自动缩小字体以适应。
+    """
+    if not text:
+        # 空行：画一个空格占位
+        pdf.set_xy(MARGIN_LEFT_PT, y)
+        pdf.set_font("Consolas", size=font_size)
+        pdf.cell(0, leading, text=" ", new_x=XPos.RIGHT, new_y=YPos.NEXT)
+        return
+
+    # 先计算整行宽度，如果超宽则缩小字体
+    avail_w = pdf.w - MARGIN_LEFT_PT - MARGIN_RIGHT_PT
+    # 分段
+    segments = []
+    i = 0
+    n = len(text)
+    while i < n:
+        is_cjk = is_cjk_char(text[i])
+        j = i
+        while j < n and is_cjk_char(text[j]) == is_cjk:
+            j += 1
+        run = text[i:j]
+        if is_cjk:
+            has_emoji = any(ord(c) >= 0x1F000 for c in run)
+            font_name = "NotoEmoji" if has_emoji else "SimHei"
+        else:
+            font_name = "Consolas"
+        segments.append((run, font_name))
+        i = j
+
+    # 计算总宽度
+    total_w = 0
+    for run, font_name in segments:
+        pdf.set_font(font_name, size=font_size)
+        total_w += pdf.get_string_width(run)
+
+    # 如果超宽，计算缩放比例
+    actual_font_size = font_size
+    if total_w > avail_w:
+        actual_font_size = font_size * avail_w / total_w * 0.98  # 留 2% 余量
+
+    # 渲染各段
+    cur_x = MARGIN_LEFT_PT
+    for run, font_name in segments:
+        pdf.set_xy(cur_x, y)
+        pdf.set_font(font_name, size=actual_font_size)
+        pdf.cell(0, leading, text=run, new_x=XPos.RIGHT, new_y=YPos.TOP)
+        run_width = pdf.get_string_width(run)
+        cur_x += run_width
+
+    # 恢复到下一行起始位置
+    pdf.set_xy(MARGIN_LEFT_PT, y + leading)
 
 
 def generate_source_code_pdf(output_path, file_list):
     pdf = SourceCodePDF()
     pdf.add_page()
-    pdf.set_font("DejaVuMono", size=CODE_FONT_SIZE)
-    pdf.set_xy(MARGIN_X, MARGIN_TOP)
-
-    avail_w = PAGE_W - 2 * MARGIN_X  # 可用宽度 mm
+    code_font_size = 10.0
+    code_leading = 12.0  # 行距 12pt
+    pdf.set_xy(MARGIN_LEFT_PT, SRC_MARGIN_TOP_PT)
 
     for idx, (display_name, fpath) in enumerate(file_list, start=1):
-        # 文件分节头
-        header = f"{idx}.{display_name}"
-        # 检查是否需要换页
-        if pdf.get_y() > PAGE_H - MARGIN_BOTTOM - 10:
+        # 文件分节头（Consolas-Bold）
+        header = f"{idx}.{display_name} "
+        if pdf.get_y() > pdf.h - MARGIN_BOTTOM_PT - 20:
             pdf.add_page()
-            pdf.set_font("DejaVuMono", size=CODE_FONT_SIZE)
-        pdf.set_font("SimHei", size=10)
-        pdf.set_x(MARGIN_X)
-        pdf.cell(0, 6, text=header, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        pdf.set_font("DejaVuMono", size=CODE_FONT_SIZE)
-        pdf.ln(2)
+        y = pdf.get_y()
+        pdf.set_xy(MARGIN_LEFT_PT, y)
+        pdf.set_font("Consolas", style="B", size=code_font_size)
+        pdf.cell(0, code_leading, text=header, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        y += code_leading
 
         # 读取文件内容
         try:
@@ -88,60 +178,128 @@ def generate_source_code_pdf(output_path, file_list):
 
         # 逐行渲染
         for raw_line in content.splitlines():
-            if pdf.get_y() > PAGE_H - MARGIN_BOTTOM - 5:
+            # 检查是否需要换页
+            if y > pdf.h - MARGIN_BOTTOM_PT - 10:
                 pdf.add_page()
-                pdf.set_font("DejaVuMono", size=CODE_FONT_SIZE)
-            pdf.set_x(MARGIN_X)
-            # 空行也要渲染（画一个空格），确保文本提取保留空行
-            line_text = raw_line if raw_line else " "
-            pdf.cell(0, CODE_LEADING_MM, text=line_text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+                y = SRC_MARGIN_TOP_PT
+            # 渲染该行
+            draw_code_line(pdf, MARGIN_LEFT_PT, y,
+                           raw_line if raw_line else "",
+                           code_font_size, code_leading)
+            y += code_leading
 
-        # 文件之间留空
-        pdf.ln(2)
+        # 文件之间留一行空白
+        y += code_leading
 
     pdf.output(output_path)
-    return pdf.page_no
+    return pdf.page_no()
 
 
 # =========================================================
-# 信息手册 PDF
+# 2. 信息手册 PDF（A4, SimHei 12pt, 行距 23.4pt）
 # =========================================================
 class InfoGuidePDF(FPDF):
+    """信息手册 PDF，A4 格式，无页眉页脚（参考文件格式）。"""
+
     def __init__(self):
-        super().__init__(orientation='P', unit='mm', format='A4')
-        self.set_margins(15, MARGIN_TOP, 15)
-        self.set_auto_page_break(True, margin=MARGIN_BOTTOM)
+        # A4: 595.3 x 841.9 pt
+        super().__init__(orientation='P', unit='pt', format='A4')
+        self.set_margins(MARGIN_LEFT_PT, INFO_MARGIN_TOP_PT, MARGIN_RIGHT_PT)
+        self.set_auto_page_break(True, margin=MARGIN_BOTTOM_PT)
+        self.c_margin = 0  # cell 左右内边距设为 0
         self.add_font("SimHei", "", SIMHEI_PATH)
         self.add_font("NotoEmoji", "", NOTOEMOJI_PATH)
         self.set_fallback_fonts(["NotoEmoji"])
 
     def header(self):
-        self.set_font("SimHei", size=11)
-        self.set_y(8)
-        self.cell(0, 8, text=HEADER_TEXT, align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        # 参考文件无页眉
+        pass
 
     def footer(self):
-        self.set_font("SimHei", size=10)
-        self.set_y(-12)
-        self.cell(0, 8, text=str(self.page_no()), align='C')
+        # 参考文件无页脚
+        pass
+
+
+def wrap_field_text(pdf, text, font_size, avail_w):
+    """
+    将字段文本按可用宽度折行，确保不拆断英文单词/数字/标识符。
+    规则：中文可在任意位置换行；连续的 ASCII 字符（英文单词、数字、路径等）
+    作为一个整体，放不下时整组移到下一行。
+    """
+    pdf.set_font("SimHei", size=font_size)
+    lines = []
+    current_line = ""
+
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        # 判断当前字符是否为 ASCII（英文/数字/标点）
+        if ord(ch) < 128:
+            # 收集连续的 ASCII 字符作为一个 token
+            j = i
+            while j < n and ord(text[j]) < 128:
+                j += 1
+            token = text[i:j]
+            # 检查 token 加到当前行是否会超宽
+            test = current_line + token
+            w = pdf.get_string_width(test)
+            if w <= avail_w:
+                current_line = test
+            else:
+                # 当前 token 放不下，先保存当前行
+                if current_line:
+                    lines.append(current_line)
+                    current_line = token
+                else:
+                    # 当前行为空，但 token 本身就超宽，必须强制放入
+                    current_line = token
+            i = j
+        else:
+            # CJK 字符，逐个添加
+            test = current_line + ch
+            w = pdf.get_string_width(test)
+            if w <= avail_w:
+                current_line = test
+            else:
+                if current_line:
+                    lines.append(current_line)
+                    current_line = ch
+                else:
+                    current_line = ch
+            i += 1
+
+    if current_line:
+        lines.append(current_line)
+
+    return lines
 
 
 def generate_info_guide_pdf(output_path, fields):
     pdf = InfoGuidePDF()
     pdf.add_page()
-    pdf.set_font("SimHei", size=11)
-    pdf.set_xy(15, MARGIN_TOP)
+    font_size = 12.0
+    leading = 23.4  # 行距 23.4pt（与参考文件一致）
+    pdf.set_font("SimHei", size=font_size)
+    pdf.set_xy(MARGIN_LEFT_PT, INFO_MARGIN_TOP_PT)
 
-    leading = 7  # mm
-    avail_w = PAGE_W - 30  # 左右各 15mm
+    avail_w = pdf.w - MARGIN_LEFT_PT - MARGIN_RIGHT_PT  # 可用宽度
 
     for label, value in fields:
         full = f"【{label}】：{value}"
-        # 使用 multi_cell 自动折行
-        pdf.multi_cell(avail_w, leading, text=full, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        # 自定义折行：不拆断英文单词
+        lines = wrap_field_text(pdf, full, font_size, avail_w)
+        for line in lines:
+            if pdf.get_y() > pdf.h - MARGIN_BOTTOM_PT:
+                pdf.add_page()
+                pdf.set_font("SimHei", size=font_size)
+            pdf.set_x(MARGIN_LEFT_PT)
+            pdf.set_font("SimHei", size=font_size)
+            pdf.cell(0, leading, text=line,
+                     new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
     pdf.output(output_path)
-    return pdf.page_no
+    return pdf.page_no()
 
 
 # =========================================================
