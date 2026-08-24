@@ -366,14 +366,13 @@ if __name__ == "__main__":
          "F1等性能指标，并支持CSV表格与高清PNG图表（300 DPI）导出。"),
         ("软件分类", "应用软件"),
         ("开发的硬件环境",
-         "13th Gen Intel(R) Core(TM) i7-13700H CPU；Intel(R) UHD Graphics；"
-         "内存：16GB；硬盘空间50GB以上"),
+         "AMD Ryzen CPU；集成显卡；内存：32GB；硬盘空间50GB以上"),
         ("运行的硬件环境",
          "双核 x86_64 CPU 及以上；集成显卡；内存：8GB；硬盘空间10GB以上"),
-        ("开发该软件的操作系统", "Windows 10"),
+        ("开发该软件的操作系统", "Windows 11"),
         ("软件开发环境/开发工具", "Python + Streamlit"),
         ("该软件的运行平台 / 操作系统",
-         "Windows 10及更高版本Windows / macOS / Linux（跨平台，基于Python）"),
+         "Windows 11及更高版本Windows / macOS / Linux（跨平台，基于Python）"),
         ("软件运行支撑环境 / 支撑软件",
          "Python 3.10及以上；Streamlit>=1.28.0；依赖库包括numpy>=1.24.0、"
          "pandas>=2.0.0、matplotlib>=3.7.0、seaborn>=0.12.0、biopython>=1.81、"
