@@ -366,7 +366,9 @@ if __name__ == "__main__":
          "F1等性能指标，并支持CSV表格与高清PNG图表（300 DPI）导出。"),
         ("软件分类", "应用软件"),
         ("开发的硬件环境",
-         "AMD Ryzen CPU；集成显卡；内存：32GB；硬盘空间50GB以上"),
+         "AMD Ryzen 9 8945HX with Radeon Graphics；AMD Radeon(TM) 610M 核显；"
+         "内存：32GB DDR5 5200MHz；硬盘空间：1TB SSD；"
+         "显示器：2560×1600 240Hz；网卡：MediaTek Wi-Fi 7 MT7925"),
         ("运行的硬件环境",
          "双核 x86_64 CPU 及以上；集成显卡；内存：8GB；硬盘空间10GB以上"),
         ("开发该软件的操作系统", "Windows 11"),
